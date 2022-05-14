@@ -1,0 +1,38 @@
+Arguments: 
+  C:\Users\Alan\.nvm\versions\node\v18.0.0\bin\node.exe C:\Users\Alan\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js add nodemon -D -E
+
+PATH: 
+  C:\Users\Alan\.nvm\versions\node\v18.0.0\bin;C:\Users\Alan\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\Alan\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files\Git\cmd;C:\Program Files\Microsoft SQL Server\150\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files\dotnet;C:\Program Files\Docker\Docker\resources\bin;C:\ProgramData\DockerDesktop\version-bin;C:\Users\Alan\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Users\Alan\AppData\Local\Streamlink\bin;C:\Users\Alan\AppData\Local\Microsoft\WindowsApps;C:\Users\Alan\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Alan\AppData\Local\Programs\Hyper\resources\bin;C:\Users\Alan\.dotnet\tools;C:\Program Files\Microsoft Visual Studio;C:\Users\Alan\AppData\Roaming\npm;C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2021.3.2\bin;C:\Users\Alan\java\jdk-17.0.2\bin;C:\Program Files\heroku\bin;C:\Users\Alan\AppData\Local\gitkraken\bin;C:\Users\Alan\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl
+
+Yarn version: 
+  1.22.17
+
+Node version: 
+  18.0.0
+
+Platform: 
+  win32 x64
+
+Trace: 
+  SyntaxError: C:\Users\Alan\Documents\Programming\Projects\auth-practice\package.json: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at C:\Users\Alan\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (C:\Users\Alan\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:310:30)
+      at C:\Users\Alan\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:321:13
+
+npm manifest: 
+  {
+    "name": "auth-practice",
+    "version": "1.0.0",
+    "author": "Alan Escobedo <alanescobedo.dev@gmail.com>",
+    "license": "MIT",
+    "scripts": {
+      "start": "node server.js"
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

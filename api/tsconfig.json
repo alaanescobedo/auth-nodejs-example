@@ -1,0 +1,9 @@
+{
+  "extends": "@tsconfig/node16-strictest-esm/tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "sourceMap": true
+  },
+  "include": ["src","../common"],
+}

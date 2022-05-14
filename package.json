@@ -1,0 +1,21 @@
+{
+  "name": "auth-practice",
+  "version": "1.0.0",
+  "author": "Alan Escobedo <alanescobedo.dev@gmail.com>",
+  "license": "MIT",
+  "workspaces": [
+    "api",
+    "client",
+    "common"
+  ],
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev:api": "yarn workspace api dev",
+    "dev:client": "yarn workspace client dev",
+    "docker:api-up": "yarn workspace api compose:up"
+  },
+  "dependencies": {
+    "yup": "0.32.11"
+  }
+}
