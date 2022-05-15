@@ -1,16 +1,9 @@
-import mongoose, { Model, Schema } from 'mongoose'
+import mongoose, { type Document, Model, Schema } from 'mongoose'
 import type { IUser } from '../../../../../common/src/modules/auth/interfaces/auth.interfaces';
 
+export interface UserEntity extends IUser, Document { }
+
 const userSchema = new Schema<IUser>({
-  createdAt: {
-    type: Date,
-    default: Date.now,
-    required: true
-  },
-  updatedAt: {
-    type: Date
-  },
-  
   email: {
     type: String,
     required: true,
@@ -23,7 +16,6 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: true,
     minlength: 5,
-    select: false,
     trim: true
   },
   username: {
@@ -34,12 +26,36 @@ const userSchema = new Schema<IUser>({
     lowercase: true,
     minlength: 5,
     maxlength: 18
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    required: true
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  },
+  active: {
+    type: Boolean,
+    default: true,
+    required: true,
+    select: false
+  },
+  verified: {
+    type: Boolean,
+    default: false,
+    required: true,
+    select: false
+  },
+  refreshTokens: {
+    type: Schema.Types.Array,
+    ref: 'Token'
   }
 }, {
   timestamps: true
 })
 
 const UserModel: Model<IUser> = mongoose.models['User'] || mongoose.model('User', userSchema);
-
 
 export default UserModel;

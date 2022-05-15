@@ -1,4 +1,5 @@
 import express from 'express'
+import loginSchema from '../../../../common/src/modules/auth/validations/login.schema'
 import signupSchema from '../../../../common/src/modules/auth/validations/signup.schema'
 import validateRequest from '../../utils/validateRequest'
 import AuthService from './auth.controller'
@@ -11,7 +12,7 @@ router
 
 router
   .route('/login')
-  .post(AuthService.login)
+  .post(validateRequest(loginSchema), AuthService.login)
 
 router
   .route('/logout')
