@@ -1,0 +1,26 @@
+import ejs from 'ejs'
+import type { IUser } from '../../../../../../common/src/modules/auth/interfaces/auth.interfaces'
+import { pathTemplate, renderDataConfig, transporter } from '../config/mailer'
+
+export interface RenderData {
+  user: Pick<IUser, 'username' | 'email'>
+  token: string
+  template: 'welcome' | 'forgotPassword' | 'passwordChanged'
+}
+
+export const sendEmail = async ({ user, template, token = '' }: RenderData): Promise<void> => {
+  const redirectURL = `${renderDataConfig[template].endpoint}${token}`
+  const btnLabel = renderDataConfig[template].btnLabel
+
+  const renderData = { template, user: user.username, redirectURL, btnLabel }
+
+  const htmlContent = await ejs.renderFile(pathTemplate, renderData)
+
+  await transporter.sendMail({
+    from: '"Auth-Example" <exampple.app@outlook.com>',
+    to: `${user.email}`,
+    subject: 'Hello ✔',
+    text: 'Hello world?',
+    html: htmlContent
+  })
+}

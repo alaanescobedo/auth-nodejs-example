@@ -1,0 +1,1 @@
+export { sendEmail as send } from './send'
