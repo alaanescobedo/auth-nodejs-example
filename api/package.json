@@ -5,7 +5,7 @@
   "author": "Alan Escobedo <alanescobedo.dev@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon --exec ts-node src/setup/config/server.ts",
+    "dev": "nodemon src/setup/config/server.ts",
     "compose:up": "docker-compose up"
   },
   "dependencies": {
