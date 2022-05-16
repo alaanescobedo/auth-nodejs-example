@@ -1,21 +1,26 @@
-import mongoose, { type   Document, Model, Schema } from 'mongoose'
+import mongoose, { type Document, Model, Schema } from 'mongoose'
+import type { UserEntity } from './user.model'
 
 export interface IToken {
   token: string
-  user: string
+  user: Pick<UserEntity, '_id'>
   lastUsedAt: Date
 }
 
-export interface TokenEntity extends IToken, Document {}
+export type TokenWithUsername = TokenEntity & {
+  user: Pick<UserEntity, 'username'>;
+} | null
+
+export interface TokenEntity extends IToken, Document { }
 
 const tokenSchema = new Schema<IToken>({
-  token:{
+  token: {
     type: String,
     unique: true,
     required: true,
     trim: true
   },
-  lastUsedAt:{
+  lastUsedAt: {
     type: Date,
     default: Date.now,
     required: true
@@ -26,9 +31,19 @@ const tokenSchema = new Schema<IToken>({
     required: true
   },
 },
-{
-  toJSON: { virtuals: true }
+  {
+    toJSON: { virtuals: true }
+  })
+
+tokenSchema.pre<TokenEntity>(/^find/, function (next) {
+  if (this === undefined) return next()
+  this.populate({
+    path: 'user',
+    select: 'username'
+  })
+  next()
 })
+
 const TokenModel: Model<IToken> = mongoose.models['Token'] || mongoose.model('Token', tokenSchema);
 
 

@@ -1,4 +1,4 @@
-import type { IAppError } from "./errorInterface"
+import type { IAppError } from "./errorApp.interface"
 
 interface AppError extends IAppError { }
 class AppError extends Error {

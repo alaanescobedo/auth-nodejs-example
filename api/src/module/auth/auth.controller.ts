@@ -1,139 +1,134 @@
 import type { Request, Response } from "express"
 import { db } from "../../setup/config"
 import { AuthStorage, TokenStorage } from './storage'
-import type { SignupClientData, SignupUserData } from "../../../../common/src/modules/auth/interfaces/auth.interfaces"
+import type { SignupClientData } from "../../../../common/src/modules/auth/interfaces/auth.interfaces"
 import type { LoginUserClientData } from "../../../../common/src/modules/auth/interfaces/login.interface"
-import Token from './utils/token.service'
 import AppError from "../error/errorApp"
-import { catchAsync } from "../error/utils"
-import { Encrypt } from "./utils"
+import { catchError } from "../error/utils"
+import { Encrypt, Token } from "./services"
+import { secureTokens } from "./helpers/secure-token"
 
-const signup = catchAsync(async (req: Request, res: Response) => {
+const signup = catchError(async (req: Request, res: Response) => {
   const { username, email, password } = req.body as SignupClientData
 
-  const passwordHashed = Encrypt.hash(password)
-  const userToCreate: SignupUserData = {
+  db.connect()
+  const user = await AuthStorage.createUser({
     username,
     email,
-    password: passwordHashed
-  }
-
-  db.connect()
-  const user = await AuthStorage.createUser(userToCreate)
-
-  const accessToken = Token.create({ data: user._id })
-  const refreshToken = Token.createRefresh({ data: user._id, expiresIn: '1d' })
-  const tokenStored = await TokenStorage.store({ token: refreshToken, user: user._id })
-
-  user.refreshTokens = [tokenStored._id]
-  await user.save()
-  db.disconnect()
-
-  user.password = ''
-
-  res.cookie('jwt', refreshToken, {
-    httpOnly: true,
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
+    password: Encrypt.hash(password)
   })
 
-  res.status(200).json({
-    route: 'Signup route',
+  const { newAccessToken, response } = await secureTokens(req, res, {
+    atData: user._id,
+    user: user._id
+  })
+  db.disconnect()
+
+  response.status(200).json({
     status: 'success',
-    token: accessToken,
-    data: {
-      user
-    }
+    token: newAccessToken,
   })
 })
 
-const login = catchAsync(async (req: Request, res: Response) => {
+const login = catchError(async (req: Request, res: Response) => {
   const { email, password } = req.body as LoginUserClientData
-  const { jwt } = req.cookies
+  const { jwt: refreshToken } = req.cookies
 
   db.connect()
   const user = await AuthStorage.findUserByEmail({ email })
   if (user === null) throw new AppError('User not found', 404)
 
-  const match = Encrypt.compare(password, user?.password)
+  const match = Encrypt.compare(password, user.password)
   if (!match) throw new AppError('Password is not valid', 401)
 
+  if (refreshToken) {
+    // Clear prev Cookies
+    res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true })
+    const tokenData = await TokenStorage.findOne({ token: refreshToken })
+    if (tokenData === null) {
+      // Possibly the token has been stolen
+      // Clear all refresh tokens for this user
+      await TokenStorage.destroyAll({ user: user._id })
+      throw new AppError('No Content - Refresh token not found', 400)
+    }
+  }
   const userInfo = {
     username: user.username,
   }
-
-
-  const accessToken = Token.create({ data: userInfo })
-  const newRefreshToken = Token.createRefresh({ data: user._id, expiresIn: '1d' })
-  const tokenStored = await TokenStorage.store({ token: newRefreshToken, user: user._id })
-
-  if (jwt) {
-    const foundToken = await TokenStorage.findOne({ token: jwt })
-    if (foundToken === null) {
-      // clear out ALL previous refresh tokens
-      user.refreshTokens = []
-    }
-    res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true })
-
-    TokenStorage.destroy({ token: jwt })
-
-    // If refresh token comes, replace it with new one
-    user.refreshTokens = jwt
-    ? user.refreshTokens.filter(tokenId => tokenId !== foundToken?._id)
-    : user.refreshTokens
-  }
-
-  // Append new refresh token to user
-  user.refreshTokens = [...user.refreshTokens, tokenStored._id]
-
-  await user.save()
-  db.disconnect()
-
-  // Create secure cookie
-  res.cookie('jwt', newRefreshToken, {
-    httpOnly: true,
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
+  const { newAccessToken, response } = await secureTokens(req, res, {
+    atData: userInfo,
+    user: user._id
   })
 
+  await TokenStorage.destroy({ token: refreshToken })
+  db.disconnect()
+
   // Send Response
-  res.status(200).json({
-    route: 'Login route',
+  response.status(200).json({
     status: 'success',
-    token: accessToken,
-    data: {
-      user
-    }
+    token: newAccessToken
   })
 })
 
-const logout = catchAsync(async (req: Request, res: Response) => {
+const logout = catchError(async (req: Request, res: Response) => {
   const { jwt: refreshToken } = req.cookies
 
   db.connect()
   const tokenData = await TokenStorage.findOne({ token: refreshToken })
   db.disconnect()
 
-  if (tokenData === null) {
-    res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true })
-    return res.status(200).json({
-      route: 'Logout route',
-      status: 'No Content',
-      data: null
-    })
-  }
+  if (tokenData === null) throw new AppError('No Content', 404)
 
-  const { token } = tokenData
-  await TokenStorage.destroy({ token })
+  res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true })
+  await TokenStorage.destroy({ token: refreshToken })
 
-  return res.status(200).json({
-    message: 'Logout route',
-  })
+  return res.status(200).json({})
 })
 
-const refresh = async (_req: Request, res: Response) => {
-  res.status(200).json({
-    message: 'Refresh route',
+const refreshToken = catchError(async (req: Request, res: Response) => {
+  const { jwt: refreshToken } = req.cookies
+  if (refreshToken === undefined) throw new AppError('No refresh token', 401)
+  res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true })
+
+  db.connect()
+  const tokenData = await TokenStorage.findOne({ token: refreshToken })
+  // ?DEBUG console.log({ tokenData })
+  if (tokenData === null) {
+    const decoded = Token.verify({ token: refreshToken, refresh: true }) as { data: string }
+    // The token does not belong to any user
+    //  Possibly invented token
+    if (decoded === null) throw new AppError('No Content', 404)
+    // ?DEBUG console.log({ decoded })
+    // Possibly the token has been stolen
+    // Clear all refresh tokens for this user
+    const userHacked = await AuthStorage.findUserById({ id: decoded?.data }) // TODO: Only return the user-id, no all the user-data
+    // ?DEBUG console.log({ userHacked })
+    if (userHacked) {
+      // User also should clear cookies in client
+      await TokenStorage.destroyAll({ user: userHacked._id })
+      //Todo Notify User of attempted hack
+      // Send email to user
+    }
+    throw new AppError('No Content', 404)
+  }
+  const { user } = tokenData
+  await TokenStorage.destroy({ token: refreshToken })
+
+  const userInfo = {
+    username: user.username,
+  }
+  const { newAccessToken, response } = await secureTokens(req, res, {
+    atData: userInfo,
+    user: user._id
   })
-}
+
+  db.disconnect()
+
+  response.status(200).json({
+    status: 'success',
+    token: newAccessToken,
+  })
+})
 
 const forgotPassword = async (_req: Request, res: Response) => {
   res.status(200).json({
@@ -151,7 +146,7 @@ export default {
   signup,
   login,
   logout,
-  refresh,
+  refreshToken,
   forgotPassword,
   resetPassword,
 }

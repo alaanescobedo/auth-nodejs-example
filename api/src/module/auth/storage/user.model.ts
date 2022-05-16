@@ -47,14 +47,17 @@ const userSchema = new Schema<IUser>({
     default: false,
     required: true,
     select: false
-  },
-  refreshTokens: {
-    type: Schema.Types.Array,
-    ref: 'Token'
   }
 }, {
   timestamps: true
 })
+
+userSchema.virtual('tokens',{
+  ref:'Token',
+  foreignField:'user',
+  localField:'_id'
+})
+
 
 const UserModel: Model<IUser> = mongoose.models['User'] || mongoose.model('User', userSchema);
 

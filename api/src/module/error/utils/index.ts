@@ -1,1 +1,1 @@
-export * from './catchAsync'
+export * from './catchError'

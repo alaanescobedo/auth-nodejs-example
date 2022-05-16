@@ -19,8 +19,8 @@ router
   .post(AuthService.logout)
 
 router
-  .route('/refresh')
-  .post(AuthService.refresh)
+  .route('/refresh-token')
+  .get(AuthService.refreshToken)
 
 router
   .route('/forgotPassword')

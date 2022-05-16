@@ -3,7 +3,7 @@ import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
 import authRouter from '../../module/auth'
 import { NODE_ENV } from '../constants'
-import errorHandler from '../../module/error/errorHandler'
+import errorHandler from '../../module/error/errorHandler.controller'
 
 const app = express()
 app.use(express.json())
