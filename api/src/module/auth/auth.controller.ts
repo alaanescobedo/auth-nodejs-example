@@ -24,6 +24,12 @@ const signup = catchError(async (req: Request, res: Response) => {
   })
   db.disconnect()
 
+  await EmailService.send({
+    template: 'welcome',
+    user: { username, email },
+    token: newAccessToken
+  })
+
   response.status(200).json({
     status: 'success',
     token: newAccessToken,
@@ -130,14 +136,70 @@ const refreshToken = catchError(async (req: Request, res: Response) => {
   })
 })
 
-const forgotPassword = async (_req: Request, res: Response) => {
-  res.status(200).json({
-    message: 'Forgot password route',
+const forgotPassword = async (req: Request, res: Response) => {
+  const { email } = req.body as { email: string }
+
+  // TODO MIDDLEWARE: Validate user agent
+  const { "user-agent": userAgent } = req.headers
+  if (!userAgent) throw new AppError('User agent is required for this operation', 400)
+  // TODO: END TODO
+
+  db.connect()
+  const user = await AuthStorage.findUserByEmail({ email })
+  if (user === null) throw new AppError('User not found', 404)
+
+  const { newAccessToken, response } = await secureTokens(res, {
+    user: user._id,
+    at: { data: user._id, expiresIn: '1h' },
+    rt: { data: user._id },
+    cookie: 'jwt',
+    agent: userAgent
+  })
+
+  db.disconnect()
+
+  const { username, email: useremail } = user
+
+  await EmailService.send({
+    template: 'forgotPassword',
+    user: { username, email: useremail },
+    token: newAccessToken
+  })
+
+  response.status(200).json({
+    message: 'send email',
   })
 }
 
-const resetPassword = async (_req: Request, res: Response) => {
-  res.status(200).json({
+const resetPassword = async (req: Request, res: Response) => {
+  const { password } = req.body as { password: string }
+  const { token: { data } } = req.locals as { token: { data: string } }
+
+  // TODO MIDDLEWARE: Validate user agent
+  const { "user-agent": userAgent } = req.headers
+  if (!userAgent) throw new AppError('User agent is required for this operation', 400)
+  // TODO: END TODO
+
+  const userUpdated = await AuthStorage.updatePassword({ id: data, password: Encrypt.hash(password) })
+  if (userUpdated === null) throw new AppError('User not found', 404)
+
+  const { newAccessToken, response } = await secureTokens(res, {
+    user: userUpdated._id,
+    at: { data: userUpdated._id },
+    rt: { data: userUpdated._id },
+    agent: userAgent,
+    cookie: 'jwt'
+  })
+
+  const { username, email } = userUpdated
+
+  await EmailService.send({
+    template: 'resetPassword',
+    user: { username, email },
+    token: newAccessToken
+  })
+
+  response.status(200).json({
     message: 'Reset password route',
   })
 }

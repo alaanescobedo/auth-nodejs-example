@@ -64,7 +64,7 @@ const renderDataConfig = {
     endpoint: `http://localhost:3000/reset-password?token=`,
     btnLabel: 'Reset Password'
   },
-  passwordChanged: {
+  resetPassword: {
     endpoint: `http://localhost:3000/reset-password?token=`,
     btnLabel: 'Reset Password'
   }

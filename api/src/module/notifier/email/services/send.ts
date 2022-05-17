@@ -5,7 +5,7 @@ import { pathTemplate, renderDataConfig, transporter } from '../config/mailer'
 export interface RenderData {
   user: Pick<IUser, 'username' | 'email'>
   token: string
-  template: 'welcome' | 'forgotPassword' | 'passwordChanged'
+  template: 'welcome' | 'forgotPassword' | 'resetPassword'
 }
 
 export const sendEmail = async ({ user, template, token = '' }: RenderData): Promise<void> => {
