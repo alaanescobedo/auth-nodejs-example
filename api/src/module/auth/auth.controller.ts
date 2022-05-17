@@ -7,9 +7,16 @@ import AppError from "../error/errorApp"
 import { catchError } from "../error/utils"
 import { Encrypt, Token } from "./services"
 import { secureTokens } from "./helpers/secure-token"
+import { EmailService } from "../notifier/email"
+import cookieService from "./services/cookie.service"
 
 const signup = catchError(async (req: Request, res: Response) => {
   const { username, email, password } = req.body as SignupClientData
+
+  // TODO MIDDLEWARE: Validate user agent
+  const { "user-agent": userAgent } = req.headers
+  if (!userAgent) throw new AppError('User agent is required for this operation', 400)
+  // TODO: END TODO
 
   db.connect()
   const user = await AuthStorage.createUser({
@@ -18,9 +25,11 @@ const signup = catchError(async (req: Request, res: Response) => {
     password: Encrypt.hash(password)
   })
 
-  const { newAccessToken, response } = await secureTokens(req, res, {
-    atData: user._id,
-    user: user._id
+  const { newAccessToken, response } = await secureTokens(res, {
+    at: { data: user._id },
+    user: user._id,
+    agent: userAgent,
+    cookie: 'rt'
   })
   db.disconnect()
 
@@ -38,7 +47,12 @@ const signup = catchError(async (req: Request, res: Response) => {
 
 const login = catchError(async (req: Request, res: Response) => {
   const { email, password } = req.body as LoginUserClientData
-  const { jwt: refreshToken } = req.cookies
+  const { rt: refreshToken } = req.cookies
+
+  // TODO MIDDLEWARE: Validate user agent
+  const { "user-agent": userAgent } = req.headers
+  if (!userAgent) throw new AppError('User agent is required for this operation', 400)
+  // TODO: END TODO
 
   db.connect()
   const user = await AuthStorage.findUserByEmail({ email })
@@ -48,25 +62,37 @@ const login = catchError(async (req: Request, res: Response) => {
   if (!match) throw new AppError('Password is not valid', 401)
 
   if (refreshToken) {
-    // Clear prev Cookies
-    res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true })
     const tokenData = await TokenStorage.findOne({ token: refreshToken })
+
     if (tokenData === null) {
       // Possibly the token has been stolen
       // Clear all refresh tokens for this user
       await TokenStorage.destroyAll({ user: user._id })
       throw new AppError('No Content - Refresh token not found', 400)
     }
+
+    await TokenStorage.destroy({ token: refreshToken })
+    res = cookieService.clear(res, { cookie: 'rt' })
   }
-  const userInfo = {
+  if (!refreshToken) {
+    const tokenOfUserAgent = await TokenStorage.findOne({ user: user._id, agent: userAgent })
+    if (tokenOfUserAgent) await TokenStorage.destroy({ token: tokenOfUserAgent.token })
+  }
+
+  // TODO: Duplicate code - move to a helper
+  const atData = {
     username: user.username,
+    roles: null
   }
-  const { newAccessToken, response } = await secureTokens(req, res, {
-    atData: userInfo,
-    user: user._id
+  // TODO: END TODO
+
+  const { newAccessToken, response } = await secureTokens(res, {
+    at: { data: atData },
+    user: user._id,
+    agent: userAgent,
+    cookie: 'rt'
   })
 
-  await TokenStorage.destroy({ token: refreshToken })
   db.disconnect()
 
   // Send Response
@@ -77,24 +103,23 @@ const login = catchError(async (req: Request, res: Response) => {
 })
 
 const logout = catchError(async (req: Request, res: Response) => {
-  const { jwt: refreshToken } = req.cookies
+  const { rt: refreshToken } = req.cookies
 
   db.connect()
   const tokenData = await TokenStorage.findOne({ token: refreshToken })
   db.disconnect()
-
   if (tokenData === null) throw new AppError('No Content', 404)
 
-  res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true })
+  const response = cookieService.clear(res, { cookie: 'rt' })
   await TokenStorage.destroy({ token: refreshToken })
 
-  return res.status(200).json({})
+  return response.status(200).json({})
 })
 
 const refreshToken = catchError(async (req: Request, res: Response) => {
-  const { jwt: refreshToken } = req.cookies
+  const { rt: refreshToken } = req.cookies
   if (refreshToken === undefined) throw new AppError('No refresh token', 401)
-  res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true })
+  res = cookieService.clear(res, { cookie: 'rt' })
 
   db.connect()
   const tokenData = await TokenStorage.findOne({ token: refreshToken })
@@ -120,12 +145,18 @@ const refreshToken = catchError(async (req: Request, res: Response) => {
   const { user } = tokenData
   await TokenStorage.destroy({ token: refreshToken })
 
-  const userInfo = {
+  // TODO: Duplicate code - move to a helper
+  const atData = {
     username: user.username,
+    roles: null
   }
-  const { newAccessToken, response } = await secureTokens(req, res, {
-    atData: userInfo,
-    user: user._id
+
+  // TODO: END TODO
+  const { newAccessToken, response } = await secureTokens(res, {
+    at: { data: atData },
+    user: user._id,
+    agent: tokenData.agent,
+    cookie: 'rt'
   })
 
   db.disconnect()
@@ -151,8 +182,7 @@ const forgotPassword = async (req: Request, res: Response) => {
   const { newAccessToken, response } = await secureTokens(res, {
     user: user._id,
     at: { data: user._id, expiresIn: '1h' },
-    rt: { data: user._id },
-    cookie: 'jwt',
+    cookie: 'rt',
     agent: userAgent
   })
 
@@ -173,7 +203,7 @@ const forgotPassword = async (req: Request, res: Response) => {
 
 const resetPassword = async (req: Request, res: Response) => {
   const { password } = req.body as { password: string }
-  const { token: { data } } = req.locals as { token: { data: string } }
+  const data = req.locals.accessToken?.data
 
   // TODO MIDDLEWARE: Validate user agent
   const { "user-agent": userAgent } = req.headers
@@ -186,9 +216,8 @@ const resetPassword = async (req: Request, res: Response) => {
   const { newAccessToken, response } = await secureTokens(res, {
     user: userUpdated._id,
     at: { data: userUpdated._id },
-    rt: { data: userUpdated._id },
     agent: userAgent,
-    cookie: 'jwt'
+    cookie: 'rt'
   })
 
   const { username, email } = userUpdated

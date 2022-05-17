@@ -7,13 +7,12 @@ interface CreateJWT {
   refresh?: boolean
   expiresIn?: string | number | undefined
 }
-const create = ({ data, expiresIn = '1m', refresh = false }: CreateJWT): string => {
+const sign = ({ data, expiresIn = '1m', refresh = false }: CreateJWT): string => {
   const SECRET = refresh ? JWT_REFRESH_SECRET : JWT_SECRET
-  if (SECRET === '') throw new AppError('JWT_SECRET is not defined', 400)
+  if (SECRET === '') throw new AppError('SECRET is not defined', 400)
 
   return jwt.sign({ data }, `${SECRET}`, { expiresIn })
 }
-
 interface VerifyJWT {
   token: string
   refresh?: boolean
@@ -21,12 +20,12 @@ interface VerifyJWT {
 }
 const verify = ({ token, refresh = false, options }: VerifyJWT) => {
   const SECRET = refresh ? JWT_REFRESH_SECRET : JWT_SECRET
-  if (SECRET === '') throw new AppError('JWT_SECRET is not defined', 400)
-  console.log('verify', jwt.verify(token, SECRET))
+  if (SECRET === '') throw new AppError('SECRET is not defined', 400)
+
   return jwt.verify(token, SECRET, options)
 }
 
 export default {
-  create,
+  sign,
   verify
 }

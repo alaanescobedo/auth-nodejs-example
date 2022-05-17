@@ -1,11 +1,11 @@
 import TokenModel, { type IToken, type TokenEntity, type TokenWithUsername } from "./token.model"
 
-const store = async ({ token, user }: Omit<IToken, 'lastUsedAt'>): Promise<TokenEntity> => {
-  const tokenCreated = await TokenModel.create({ token, user })
+const store = async ({ token, user, agent }: Omit<IToken, 'lastUsedAt'>): Promise<TokenEntity> => {
+  const tokenCreated = await TokenModel.create({ token, user, agent })
   return tokenCreated
 }
-const findOne = async ({ token }: Pick<IToken, 'token'>): Promise<TokenWithUsername> => {
-  const tokenFound: TokenWithUsername = await TokenModel.findOne({ token })
+const findOne = async ({ ...query }: Partial<IToken>): Promise<TokenWithUsername> => {
+  const tokenFound: TokenWithUsername = await TokenModel.findOne({ ...query })
   return tokenFound
 }
 const destroy = async ({ token }: Pick<IToken, 'token'>): Promise<void> => {
