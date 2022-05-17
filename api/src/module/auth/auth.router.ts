@@ -3,34 +3,34 @@ import loginSchema from '../../../../common/src/modules/auth/validations/login.s
 import resetPasswordSchema from '../../../../common/src/modules/auth/validations/reset-password.schema'
 import signupSchema from '../../../../common/src/modules/auth/validations/signup.schema'
 import validateRequest from '../../utils/validateRequest'
-import AuthService from './auth.controller'
+import AuthController from './controllers'
 import { authProtect } from './utils/auth-protect.middleware'
 
 const router = express.Router()
 
 router
   .route('/signup')
-  .post(validateRequest(signupSchema), AuthService.signup)
+  .post(validateRequest(signupSchema), AuthController.register)
 
 router
   .route('/login')
-  .post(validateRequest(loginSchema), AuthService.login)
+  .post(validateRequest(loginSchema), AuthController.connect)
 
 router
   .route('/logout')
-  .post(AuthService.logout)
+  .post(AuthController.disconnect)
 
 router
   .route('/refresh-token')
-  .post(AuthService.refreshToken)
+  .post(AuthController.refreshToken)
 
 router
   .route('/forgot-password')
-  .post(AuthService.forgotPassword)
+  .post(AuthController.forgotPassword)
 
 router
   .use(authProtect)
-  .route('/reset-password')
-  .patch(validateRequest(resetPasswordSchema), AuthService.resetPassword)
+  .route('/reset-password/:token')
+  .patch(validateRequest(resetPasswordSchema), AuthController.resetPassword)
 
 export default router
