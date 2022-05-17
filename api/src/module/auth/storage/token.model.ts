@@ -4,6 +4,7 @@ import type { UserEntity } from './user.model'
 export interface IToken {
   token: string
   user: Pick<UserEntity, '_id'>
+  agent: string
   lastUsedAt: Date
 }
 
@@ -30,6 +31,10 @@ const tokenSchema = new Schema<IToken>({
     ref: 'User',
     required: true
   },
+  agent:{
+    type: String,
+    required: true
+  }
 },
   {
     toJSON: { virtuals: true }
