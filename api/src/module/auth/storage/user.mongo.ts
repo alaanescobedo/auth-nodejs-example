@@ -13,9 +13,14 @@ const findUserById = async ({ id }: { id: string }): Promise<UserEntity | null> 
   const user = await UserModel.findById(id)
   return user
 }
+const updatePassword = async ({ id, password }: { id: string; password: string }): Promise<UserEntity | null> => {
+  const user = await UserModel.findByIdAndUpdate(id, { password })
+  return user
+}
 
 export default {
   createUser,
   findUserByEmail,
   findUserById,
+  updatePassword
 }
