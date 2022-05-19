@@ -1,5 +1,5 @@
 import mongoose, { type Document, Model, Schema } from 'mongoose'
-import type { IUser } from '../../../../../common/src/modules/auth/interfaces/auth.interfaces';
+import type { IUser } from '@common/auth/interfaces';
 
 export interface UserEntity extends IUser, Document { }
 
@@ -52,13 +52,13 @@ const userSchema = new Schema<IUser>({
   timestamps: true
 })
 
-userSchema.virtual('tokens',{
-  ref:'Token',
-  foreignField:'user',
-  localField:'_id'
+userSchema.virtual('tokens', {
+  ref: 'Token',
+  foreignField: 'user',
+  localField: '_id'
 })
 
 
 const UserModel: Model<IUser> = mongoose.models['User'] || mongoose.model('User', userSchema);
 
-export default UserModel;
+export { UserModel };

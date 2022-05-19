@@ -1,1 +1,1 @@
-// export * from './auth-protect.middleware'
+export * from './auth-protect.middleware'

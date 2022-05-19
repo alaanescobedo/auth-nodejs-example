@@ -7,4 +7,4 @@ const loginSchema: SchemaOf<LoginUserClientData> = object({
 })
 
 export interface LoginValidation extends InferType<typeof loginSchema> { }
-export default loginSchema
+export { loginSchema }

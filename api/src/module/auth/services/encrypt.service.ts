@@ -9,7 +9,7 @@ export const compare = async (plainPassword: string, hashedPassword: string): Pr
   return await bcrypt.compare(plainPassword, hashedPassword)
 }
 
-export default {
+export const EncryptService = {
   hash,
   compare
 }

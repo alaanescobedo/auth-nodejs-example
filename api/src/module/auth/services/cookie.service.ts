@@ -1,15 +1,12 @@
 import type { CookieOptions, Response } from "express"
-import { COOKIE_SAME_SITE, COOKIE_SECURE } from "../../../setup/constants"
+import { COOKIE_SAME_SITE, COOKIE_SECURE } from "@setup/constants"
 
 const ONE_DAY = 1000 * 60 * 60 * 24
-console.log({ COOKIE_SAME_SITE }, { COOKIE_SECURE })
 /**
  * The configuration of cookies to work in a local environment is different from the one required for production environments (if its's https, which is recommended).
  * And at the same time it can change depending on how the domains of the client and server are configured.
- * There are tools to work with the local environment such as https (See https://github.com/FiloSottile/mkcert).
- * However it is not common for all developers to work with them, and it requires extra work in the configuration
  * 
- * ? This section can be a reference for possible problems in production
+ * ? This section can be a reference for possible issues in production
  *  */
 const defaultCookieConfig: CookieOptions = {
   httpOnly: true,
@@ -36,7 +33,7 @@ const clear = (response: Response,
   return response.clearCookie(cookie, cookieConfig)
 }
 
-export default {
+export const CookieService = {
   create,
   clear
 }

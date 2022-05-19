@@ -1,34 +1,29 @@
 import type { Request, Response } from "express"
-import AppError from "../../error/errorApp"
-import { EmailService } from "../../notifier/email"
-import { secureTokens } from "../helpers/secure-token"
-import { Encrypt } from "../services"
-import { AuthStorage } from "../storage"
+import { EncryptService, TokenService } from "@auth/services"
+import { UserRepository } from "@auth/repository"
+import { EmailService } from "@notifier/email"
+import { AppError } from "@error"
 
 const resetPassword = async (req: Request, res: Response) => {
+  const { "user-agent": userAgent } = req.headers
+  if (!userAgent) throw new AppError('User agent is required for this operation', 400)
+
   const { password } = req.body as { password: string }
   const data = req.locals.accessToken?.data
 
-  // TODO MIDDLEWARE: Validate user agent
-  const { "user-agent": userAgent } = req.headers
-  if (!userAgent) throw new AppError('User agent is required for this operation', 400)
-  // TODO: END TODO
-
-  const userUpdated = await AuthStorage.updatePassword({ id: data, password: Encrypt.hash(password) })
+  const userUpdated = await UserRepository.findOneAndUpdate({ id: data, password: EncryptService.hash(password) })
   if (userUpdated === null) throw new AppError('User not found', 404)
 
-  const { newAccessToken, response } = await secureTokens(res, {
+  const { newAccessToken, response } = await TokenService.refresh(res, {
     user: userUpdated._id,
     at: { data: userUpdated._id },
     agent: userAgent,
     cookie: 'rt'
   })
 
-  const { username, email } = userUpdated
-
   await EmailService.send({
     template: 'resetPassword',
-    user: { username, email },
+    user: userUpdated,
     token: newAccessToken
   })
 

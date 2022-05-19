@@ -1,29 +1,25 @@
 import type { Request, Response } from "express"
-import type { SignupClientData } from "../../../../../common/src/modules/auth/interfaces/auth.interfaces"
-import { db } from "../../../setup/config"
-import AppError from "../../error/errorApp"
-import { catchError } from "../../error/utils"
-import { EmailService } from "../../notifier/email"
-import { secureTokens } from "../helpers/secure-token"
-import { Encrypt } from "../services"
-import { AuthStorage } from "../storage"
+import type { SignupClientData } from "@common/auth/interfaces"
+import { db } from "@setup/config"
+import { UserRepository } from "@auth/repository"
+import { EncryptService, TokenService } from "@auth/services"
+import { EmailService } from "@notifier/email"
+import { AppError, catchError } from "@error"
 
 const register = catchError(async (req: Request, res: Response) => {
-  const { username, email, password } = req.body as SignupClientData
-
-  // TODO MIDDLEWARE: Validate user agent
   const { "user-agent": userAgent } = req.headers
   if (!userAgent) throw new AppError('User agent is required for this operation', 400)
-  // TODO: END TODO
+
+  const { username, email, password } = req.body as SignupClientData
 
   db.connect()
-  const user = await AuthStorage.createUser({
+  const user = await UserRepository.create({
     username,
     email,
-    password: Encrypt.hash(password)
+    password: EncryptService.hash(password)
   })
 
-  const { newAccessToken, response } = await secureTokens(res, {
+  const { newAccessToken, response } = await TokenService.refresh(res, {
     at: { data: user._id },
     user: user._id,
     agent: userAgent,

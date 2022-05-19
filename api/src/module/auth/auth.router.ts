@@ -1,10 +1,12 @@
 import express from 'express'
-import loginSchema from '../../../../common/src/modules/auth/validations/login.schema'
-import resetPasswordSchema from '../../../../common/src/modules/auth/validations/reset-password.schema'
-import signupSchema from '../../../../common/src/modules/auth/validations/signup.schema'
-import validateRequest from '../../utils/validateRequest'
-import AuthController from './controllers'
-import { authProtect } from './utils/auth-protect.middleware'
+import {
+  loginSchema,
+  resetPasswordSchema,
+  signupSchema
+} from '@common/auth/validations'
+import AuthController from '@auth/controllers'
+import { authProtect } from '@auth/utils'
+import { validateRequest } from '@utils'
 
 const router = express.Router()
 

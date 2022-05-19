@@ -28,4 +28,4 @@ const signupSchema: SchemaOf<SignupClientData> = object({
 })
 
 export interface SignupValidation extends InferType<typeof signupSchema> { }
-export default signupSchema
+export { signupSchema }

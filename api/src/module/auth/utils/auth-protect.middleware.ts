@@ -1,10 +1,6 @@
-import type { NextFunction, Request, Response } from 'express'
-import AppError from '../../error/errorApp'
-// import AppError from '../../error/errorApp'
-import { catchError } from '../../error/utils'
-import { Token } from '../services'
-// import { AuthStorage } from '../storage'
-// import { db } from '../../../setup/config'
+import type { NextFunction, Request, Response } from "express"
+import { AppError, catchError } from "@error"
+import { TokenService } from "@auth/services"
 
 
 export const authProtect = catchError(async (req: Request, _res: Response, next: NextFunction) => {
@@ -15,7 +11,7 @@ export const authProtect = catchError(async (req: Request, _res: Response, next:
     token = authorization.substring(7)
   }
 
-  const { data, exp } = Token.verify({ token }) as { data: string, exp: number }
+  const { data, exp } = TokenService.verify({ token }) as { data: string, exp: number }
 
   if (data === undefined || exp === undefined) throw new AppError('Token is not valid', 400)
   if (exp * 1000 < Date.now()) throw new AppError('Token is expired', 400)

@@ -2,11 +2,30 @@
   "extends": "@tsconfig/node16-strictest-esm/tsconfig.json",
   "ts-node": {
     "files": true,
+    "compilerOptions": {
+      "module": "commonjs"
+    }
   },
   "compilerOptions": {
-    "module": "CommonJS",
-    "esModuleInterop": true,
+    // "module": "CommonJS",
+    // "esModuleInterop": true,
     "sourceMap": true,
+    
+    "moduleResolution": "node",
+    "module": "ES2022",
+    "target": "ES2022",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@auth/*": ["module/auth/*"],
+      "@error": ["module/error"],
+      "@notifier/*": ["module/notifier/*"],
+      "@setup/*": ["setup/*"],
+      "@utils": ["utils"],
+      "@common/auth/*": ["../../common/src/modules/auth/*"],
+    },
   },
   "include": [
     "src",

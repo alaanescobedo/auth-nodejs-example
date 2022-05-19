@@ -16,4 +16,4 @@ const resetPasswordSchema: SchemaOf<ResetPasswordUserClientData> = object({
 })
 
 export interface ResetPasswordValidation extends InferType<typeof resetPasswordSchema> { }
-export default resetPasswordSchema
+export { resetPasswordSchema }

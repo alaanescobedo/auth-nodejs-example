@@ -1,2 +1,3 @@
-export { default as Token } from './token.service'
-export { default as Encrypt } from '../services/encrypt.service'
+export { TokenService } from './token.service'
+export { EncryptService } from '../services/encrypt.service'
+export { CookieService } from '../services/cookie.service'

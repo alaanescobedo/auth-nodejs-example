@@ -31,7 +31,7 @@ const tokenSchema = new Schema<IToken>({
     ref: 'User',
     required: true
   },
-  agent:{
+  agent: {
     type: String,
     required: true
   }
@@ -52,4 +52,4 @@ tokenSchema.pre<TokenEntity>(/^find/, function (next) {
 const TokenModel: Model<IToken> = mongoose.models['Token'] || mongoose.model('Token', tokenSchema);
 
 
-export default TokenModel;
+export { TokenModel };

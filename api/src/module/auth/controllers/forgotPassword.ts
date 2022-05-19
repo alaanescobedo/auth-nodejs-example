@@ -1,23 +1,21 @@
 import type { Request, Response } from "express"
-import { db } from "../../../setup/config"
-import AppError from "../../error/errorApp"
-import { EmailService } from "../../notifier/email"
-import { secureTokens } from "../helpers/secure-token"
-import { AuthStorage } from "../storage"
+import { db } from "@setup/config"
+import { TokenService } from "@auth/services"
+import { UserRepository } from "@auth/repository"
+import { EmailService } from "@notifier/email"
+import { AppError } from "@error"
 
 const forgotPassword = async (req: Request, res: Response) => {
-  const { email } = req.body as { email: string }
-
-  // TODO MIDDLEWARE: Validate user agent
   const { "user-agent": userAgent } = req.headers
   if (!userAgent) throw new AppError('User agent is required for this operation', 400)
-  // TODO: END TODO
+
+  const { email } = req.body as { email: string }
 
   db.connect()
-  const user = await AuthStorage.findUserByEmail({ email })
+  const user = await UserRepository.findOne({ email })
   if (user === null) throw new AppError('User not found', 404)
 
-  const { newAccessToken, response } = await secureTokens(res, {
+  const { newAccessToken, response } = await TokenService.refresh(res, {
     user: user._id,
     at: { data: user._id, expiresIn: '1h' },
     cookie: 'rt',

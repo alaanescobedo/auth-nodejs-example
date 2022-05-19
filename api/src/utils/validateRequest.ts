@@ -7,4 +7,4 @@ const validateRequest: Function = (schema: SchemaOf<any>): Function => catchErro
   next()
 })
 
-export default validateRequest
+export { validateRequest }
