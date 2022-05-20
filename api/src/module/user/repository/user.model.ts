@@ -60,5 +60,6 @@ userSchema.virtual('tokens', {
 
 
 const UserModel: Model<IUser> = mongoose.models['User'] || mongoose.model('User', userSchema);
+export type IUserModel = mongoose.Model<IUser, {}, {}, {}>
 
 export { UserModel };

@@ -1,5 +1,5 @@
 import mongoose, { type Document, Model, Schema } from 'mongoose'
-import type { UserEntity } from './user.model'
+import type { UserEntity } from '../../user/repository/user.model'
 
 export interface IToken {
   token: string

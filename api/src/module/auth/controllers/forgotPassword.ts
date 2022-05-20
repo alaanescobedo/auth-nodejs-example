@@ -1,8 +1,7 @@
 import type { Request, Response } from "express"
-import { db } from "@setup/config"
 import { TokenService } from "@auth/services"
-import { UserRepository } from "@auth/repository"
-import { EmailService } from "@notifier/email"
+import { UserService } from "@user/services"
+import { EmailService } from "@notifier/email/services"
 import { AppError } from "@error"
 
 const forgotPassword = async (req: Request, res: Response) => {
@@ -11,8 +10,7 @@ const forgotPassword = async (req: Request, res: Response) => {
 
   const { email } = req.body as { email: string }
 
-  db.connect()
-  const user = await UserRepository.findOne({ email })
+  const user = await UserService.findOne({ email })
   if (user === null) throw new AppError('User not found', 404)
 
   const { newAccessToken, response } = await TokenService.refresh(res, {
@@ -21,8 +19,6 @@ const forgotPassword = async (req: Request, res: Response) => {
     cookie: 'rt',
     agent: userAgent
   })
-
-  db.disconnect()
 
   const { username, email: useremail } = user
 

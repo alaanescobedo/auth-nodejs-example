@@ -1,1 +1,1 @@
-export * from './validateRequest'
+export { validateRequest } from './validate-request'

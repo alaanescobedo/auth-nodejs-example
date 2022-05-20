@@ -1,6 +1,6 @@
 import Origins from "./origins"
 import type { CorsOptions } from 'cors'
-import AppError from "../../module/error/errorApp"
+import { AppError } from "@error"
 
 const corsConfig: CorsOptions = {
   origin: (origin = '', callback) => {

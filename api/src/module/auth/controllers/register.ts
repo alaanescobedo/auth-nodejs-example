@@ -1,9 +1,8 @@
 import type { Request, Response } from "express"
 import type { SignupClientData } from "@common/auth/interfaces"
-import { db } from "@setup/config"
-import { UserRepository } from "@auth/repository"
+import { UserService } from "@user/services"
+import { EmailService } from "@notifier/email/services"
 import { EncryptService, TokenService } from "@auth/services"
-import { EmailService } from "@notifier/email"
 import { AppError, catchError } from "@error"
 
 const register = catchError(async (req: Request, res: Response) => {
@@ -12,8 +11,7 @@ const register = catchError(async (req: Request, res: Response) => {
 
   const { username, email, password } = req.body as SignupClientData
 
-  db.connect()
-  const user = await UserRepository.create({
+  const user = await UserService.create({
     username,
     email,
     password: EncryptService.hash(password)
@@ -25,7 +23,6 @@ const register = catchError(async (req: Request, res: Response) => {
     agent: userAgent,
     cookie: 'rt'
   })
-  db.disconnect()
 
   await EmailService.send({
     template: 'welcome',

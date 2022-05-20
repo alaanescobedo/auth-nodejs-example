@@ -1,7 +1,7 @@
 import type { Request, Response } from "express"
+import { UserRepository } from "@user/repository"
+import { EmailService } from "@notifier/email/services"
 import { EncryptService, TokenService } from "@auth/services"
-import { UserRepository } from "@auth/repository"
-import { EmailService } from "@notifier/email"
 import { AppError } from "@error"
 
 const resetPassword = async (req: Request, res: Response) => {

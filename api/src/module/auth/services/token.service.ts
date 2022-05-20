@@ -2,9 +2,11 @@ import type { Response } from "express"
 import jwt from 'jsonwebtoken'
 
 import { JWT_REFRESH_SECRET, JWT_SECRET } from "@setup/constants"
-import { UserRepository, UserEntity } from "@auth/repository"
+import { TokenRepository } from "@auth/repository"
 import { AppError } from "@error"
 import { Cookie, CookieService } from "./cookie.service"
+import type { UserEntity } from '@user/repository';
+
 interface CreateJWT {
   data: any
   refresh?: boolean
@@ -53,7 +55,7 @@ const refresh = async (res: Response, {
   const newAccessToken = sign({ data: atData, expiresIn: atExpiresIn })
   const newRefreshToken = sign({ data: rtData, expiresIn: rtExpiresIn, refresh: true })
 
-  await UserRepository.create({ token: newRefreshToken, user, agent })
+  await TokenRepository.create({ token: newRefreshToken, user, agent })
   const response = CookieService.create(res, { cookie, token: newRefreshToken })
 
   return {
@@ -64,7 +66,7 @@ const refresh = async (res: Response, {
 
 const revoke = async (res: Response, { cookie, token }: any) => {
   const response = CookieService.clear(res, { cookie })
-  await UserRepository.deleteOne({ token })
+  await TokenRepository.deleteOne({ token })
 
   return response
 }

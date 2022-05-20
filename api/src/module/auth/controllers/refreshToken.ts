@@ -1,8 +1,8 @@
 import type { Request, Response } from "express"
-import { db } from "@setup/config"
-import { AppError, catchError } from "@error"
+import { UserService } from "@user/services"
 import { TokenService, CookieService } from "@auth/services"
-import { TokenRepository, UserRepository } from "@auth/repository"
+import { TokenRepository } from "@auth/repository"
+import { AppError, catchError } from "@error"
 
 const refreshToken = catchError(async (req: Request, res: Response) => {
   const { rt: refreshToken } = req.cookies
@@ -10,7 +10,6 @@ const refreshToken = catchError(async (req: Request, res: Response) => {
 
   res = CookieService.clear(res, { cookie: 'rt' })
 
-  db.connect()
   const tokenData = await TokenRepository.findOne({ token: refreshToken })
   // ?DEBUG console.log({ tokenData })
   if (tokenData === null) {
@@ -22,7 +21,7 @@ const refreshToken = catchError(async (req: Request, res: Response) => {
     // Possibly the token has been stolen
     // Clear all refresh tokens for this user
     // User also should clear cookies in client
-    const userHacked = await UserRepository.findById({ id: decoded.data })
+    const userHacked = await UserService.findById({ id: decoded.data })
     if (userHacked) await TokenRepository.deleteMany({ user: userHacked._id })
 
     throw new AppError('No Content', 404)
@@ -41,8 +40,6 @@ const refreshToken = catchError(async (req: Request, res: Response) => {
     agent: tokenData.agent,
     cookie: 'rt'
   })
-
-  db.disconnect()
 
   response.status(200).json({
     status: 'success',

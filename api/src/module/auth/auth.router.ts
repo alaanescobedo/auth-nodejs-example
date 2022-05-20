@@ -4,11 +4,15 @@ import {
   resetPasswordSchema,
   signupSchema
 } from '@common/auth/validations'
-import AuthController from '@auth/controllers'
-import { authProtect } from '@auth/utils'
 import { validateRequest } from '@utils'
+import { authProtect } from '@auth/middlewares'
+import AuthController from '@auth/controllers'
+import { connectionDB } from '@setup/config/middlewares/connection-db'
 
 const router = express.Router()
+
+// All the next routes will be connected to the database
+router.use(connectionDB)
 
 router
   .route('/signup')

@@ -7,19 +7,17 @@
     }
   },
   "compilerOptions": {
-    // "module": "CommonJS",
-    // "esModuleInterop": true,
-    "sourceMap": true,
-    
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "sourceMap": true,    
     "moduleResolution": "node",
-    "module": "ES2022",
     "target": "ES2022",
     "strict": true,
-    "esModuleInterop": true,
     "skipLibCheck": true,
     "baseUrl": "./src",
     "paths": {
       "@auth/*": ["module/auth/*"],
+      "@user/*":["module/user/*"],
       "@error": ["module/error"],
       "@notifier/*": ["module/notifier/*"],
       "@setup/*": ["setup/*"],

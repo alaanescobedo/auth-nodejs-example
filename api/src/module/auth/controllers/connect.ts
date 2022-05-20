@@ -1,10 +1,10 @@
 import type { Request, Response } from "express"
 import type { LoginUserClientData } from "../../../../../common/src/modules/auth/interfaces/login.interface"
-import { db } from "../../../setup/config"
-import AppError from "../../error/errorApp"
+import { AppError } from "../../error/errorApp"
 import { catchError } from "../../error/utils"
 import { EncryptService, TokenService } from "@auth/services"
-import { TokenRepository, UserRepository } from "@auth/repository"
+import { TokenRepository } from "@auth/repository"
+import { UserService } from "@user/services"
 
 const connect = catchError(async (req: Request, res: Response) => {
   const { email, password } = req.body as LoginUserClientData
@@ -12,9 +12,7 @@ const connect = catchError(async (req: Request, res: Response) => {
 
   const { "user-agent": userAgent } = req.headers
   if (!userAgent) throw new AppError('User agent is required for this operation', 400)
-
-  db.connect()
-  const user = await UserRepository.findOne({ email })
+  const user = await UserService.findOne({ email })
   if (user === null) throw new AppError('User not found', 404)
 
   const match = EncryptService.compare(password, user.password)
@@ -48,8 +46,6 @@ const connect = catchError(async (req: Request, res: Response) => {
     agent: userAgent,
     cookie: 'rt'
   })
-
-  db.disconnect()
 
   // Send Response
   response.status(200).json({
