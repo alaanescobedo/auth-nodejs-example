@@ -1,14 +1,16 @@
 import ejs from 'ejs'
 import type { IUser } from '../../../../../../common/src/modules/auth/interfaces/auth.interfaces'
-import { pathTemplate, renderDataConfig, transporter } from '../config/mailer'
+import { pathTemplate, renderDataConfig, transporter } from '../config/node-mailer'
 
-export interface RenderData {
+
+
+export interface SendEmailData {
   user: Pick<IUser, 'username' | 'email'>
   token: string
   template: 'welcome' | 'forgotPassword' | 'resetPassword'
 }
 
-export const sendEmail = async ({ user, template, token = '' }: RenderData): Promise<void> => {
+export const sendEmail = async ({ user, template, token = '' }: SendEmailData): Promise<void> => {
   const redirectURL = `${renderDataConfig[template].endpoint}${token}`
   const btnLabel = renderDataConfig[template].btnLabel
 
@@ -23,4 +25,8 @@ export const sendEmail = async ({ user, template, token = '' }: RenderData): Pro
     text: 'Hello world?',
     html: htmlContent
   })
+}
+
+export const NodeMailerService = {
+  send: sendEmail
 }

@@ -1,1 +1,1 @@
-export { sendEmail as send } from './send'
+export { default as EmailService } from './email.service'
