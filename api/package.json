@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon -r tsconfig-paths/register src/setup/config/server.ts",
-    "compose:up": "docker-compose up"
+    "compose:up": "docker-compose up",
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "bcryptjs": "2.4.3",

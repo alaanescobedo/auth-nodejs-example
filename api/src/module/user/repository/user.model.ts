@@ -1,21 +1,25 @@
 import mongoose, { type Document, Model, Schema } from 'mongoose'
 import type { IUser } from '@common/auth/interfaces';
+import { EncryptService } from '@auth/services';
 
-export interface UserEntity extends IUser, Document { }
+export interface UserEntity extends IUser, Document {
+  id: string
+}
 
-const userSchema = new Schema<IUser>({
+// Timestamps automatically add createdAt and updatedAt fields
+export const userSchema = new Schema<IUser>({
   email: {
     type: String,
-    required: true,
+    required: [true, 'email is required'],
     unique: true,
     trim: true,
     lowercase: true,
-    minlength: 5
+    minlength: [5, 'email must be at least 5 characters'],
   },
   password: {
     type: String,
-    required: true,
-    minlength: 5,
+    required: [true, 'password is required'],
+    minlength: [8, 'password must be at least 8 characters'],
     trim: true
   },
   username: {
@@ -26,15 +30,6 @@ const userSchema = new Schema<IUser>({
     lowercase: true,
     minlength: 5,
     maxlength: 18
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-    required: true
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
   },
   active: {
     type: Boolean,
@@ -49,15 +44,21 @@ const userSchema = new Schema<IUser>({
     select: false
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: {
+    versionKey: false
+  },
+  toObject: {
+    versionKey: false
+  }
 })
 
-userSchema.virtual('tokens', {
-  ref: 'Token',
-  foreignField: 'user',
-  localField: '_id'
-})
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password')) next()
 
+  this.password = EncryptService.hash(this.password);
+  next();
+});
 
 const UserModel: Model<IUser> = mongoose.models['User'] || mongoose.model('User', userSchema);
 export type IUserModel = mongoose.Model<IUser, {}, {}, {}>

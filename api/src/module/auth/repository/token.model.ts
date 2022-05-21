@@ -14,17 +14,13 @@ export type TokenWithUsername = TokenEntity & {
 
 export interface TokenEntity extends IToken, Document { }
 
+// Timestamps automatically add createdAt and updatedAt fields
 const tokenSchema = new Schema<IToken>({
   token: {
     type: String,
     unique: true,
     required: true,
     trim: true
-  },
-  lastUsedAt: {
-    type: Date,
-    default: Date.now,
-    required: true
   },
   user: {
     type: Schema.Types.ObjectId,
@@ -37,7 +33,12 @@ const tokenSchema = new Schema<IToken>({
   }
 },
   {
-    toJSON: { virtuals: true }
+    toJSON: {
+      virtuals: true
+    },
+    timestamps: {
+      updatedAt: 'lastUsedAt'
+    }
   })
 
 tokenSchema.pre<TokenEntity>(/^find/, function (next) {
@@ -50,6 +51,6 @@ tokenSchema.pre<TokenEntity>(/^find/, function (next) {
 })
 
 const TokenModel: Model<IToken> = mongoose.models['Token'] || mongoose.model('Token', tokenSchema);
-
+export type ITokenModel = mongoose.Model<IToken, {}, {}, {}>
 
 export { TokenModel };
