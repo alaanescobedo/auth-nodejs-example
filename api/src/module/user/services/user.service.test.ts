@@ -1,5 +1,5 @@
-import { UserService } from "@user/services";
-import { UserEntity, UserRepository } from "@user/repository";
+import { UserService } from "@user";
+import { UserModel } from "@user/repository";
 
 const testUser = {
   username: "testUser",
@@ -16,13 +16,14 @@ const testUser2 = {
 const fakeId = '62880e24e99fb107e5b22b8e' // Valid ObjectId of mongoose
 
 describe("UserService", () => {
+  const userService = UserService()
 
   beforeEach(async () => {
-    await UserRepository.deleteMany({});
+    await UserModel.deleteMany({});
   })
 
   it(".create - should create a user", async () => {
-    const user: UserEntity = await UserService.create(testUser)
+    const user = await userService.create(testUser)
     expect(user.id).toBeDefined();
     expect(user.username).toBe(testUser.username.toLowerCase());
     expect(user.email).toBe(testUser.email);
@@ -37,98 +38,98 @@ describe("UserService", () => {
   });
 
   it('.getById - should get a user by id', async () => {
-    const user = await UserService.create(testUser)
-    const userFound = await UserService.getById({ id: user._id })
+    const user = await userService.create(testUser)
+    const userFound = await userService.getById({ id: user.id })
 
     expect(userFound).not.toBe(null);
   })
   it('.getById - should throw a error if user not found', async () => {
     try {
-      await UserService.getById({ id: fakeId })
+      await userService.getById({ id: fakeId })
     } catch (error) {
       expect(error).toBeDefined();
     }
   })
   it('.getOne - should get a user using different query options', async () => {
-    const user = await UserService.create(testUser)
-    const userFound = await UserService.getOne({ username: user.username })
+    const user = await userService.create(testUser)
+    const userFound = await userService.getOne({ username: user.username })
 
     expect(userFound).not.toBe(null);
-    expect(userFound._id).toEqual(user._id);
+    expect(userFound.id).toEqual(user.id);
     expect(userFound.username).toEqual(user.username);
 
-    const userFound2 = await UserService.getOne({ email: user.email, })
+    const userFound2 = await userService.getOne({ email: user.email, })
     expect(userFound2).not.toBe(null);
-    expect(userFound2._id).toEqual(user._id);
+    expect(userFound2.id).toEqual(user.id);
     expect(userFound2.username).toEqual(user.username);
 
-    const userFound3 = await UserService.getOne({ id: user._id })
+    const userFound3 = await userService.getOne({ id: user.id })
     expect(userFound3).not.toBe(null);
-    expect(userFound3._id).toEqual(user._id);
+    expect(userFound3.id).toEqual(user.id);
     expect(userFound3.username).toEqual(user.username);
   })
   it('.getOne - should throw a error if user not found', async () => {
     try {
-      await UserService.getOne({ id: fakeId })
+      await userService.getOne({ id: fakeId })
     } catch (error) {
       expect(error).toBeDefined();
     }
   })
 
   it('.findById - should find a user by id', async () => {
-    const user = await UserService.create(testUser)
-    const userFound = await UserService.findById({ id: user._id })
+    const user = await userService.create(testUser)
+    const userFound = await userService.findById({ id: user.id })
     if (userFound === null) throw new Error("Invalid test, user not found")
 
     expect(userFound).not.toBe(null);
-    expect(userFound._id).toEqual(user._id);
+    expect(userFound.id).toEqual(user.id);
     expect(userFound.username).toEqual(user.username);
   })
   it('.findById - should return null if no user found', async () => {
-    const userFound = await UserService.findById({ id: fakeId })
+    const userFound = await userService.findById({ id: fakeId })
     expect(userFound).toBe(null);
   })
   it('.findOne - should find a user using different query options', async () => {
-    const user = await UserService.create(testUser)
-    const userFound = await UserService.findOne({ username: user.username })
+    const user = await userService.create(testUser)
+    const userFound = await userService.findOne({ username: user.username })
     if (userFound === null) throw new Error("Invalid test, user not found")
 
     expect(userFound).not.toBe(null);
-    expect(userFound._id).toEqual(user._id);
+    expect(userFound.id).toEqual(user.id);
     expect(userFound.username).toEqual(user.username);
 
-    const userFound2 = await UserService.findOne({ email: user.email, })
+    const userFound2 = await userService.findOne({ email: user.email, })
     if (userFound2 === null) throw new Error("Invalid test, user not found")
     expect(userFound2).not.toBe(null);
-    expect(userFound2._id).toEqual(user._id);
+    expect(userFound2.id).toEqual(user.id);
     expect(userFound2.username).toEqual(user.username);
 
-    const userFound3 = await UserService.findOne({ id: user._id })
+    const userFound3 = await userService.findOne({ id: user.id })
     if (userFound3 === null) throw new Error("Invalid test, user not found")
     expect(userFound3).not.toBe(null);
-    expect(userFound3._id).toEqual(user._id);
+    expect(userFound3.id).toEqual(user.id);
     expect(userFound3.username).toEqual(user.username);
   })
   it('.findOne - should return null if no user found', async () => {
-    const userFound = await UserService.findOne({ id: fakeId })
+    const userFound = await userService.findOne({ id: fakeId })
     expect(userFound).toBe(null);
   })
 
   it('.deleteOne - should delete a user', async () => {
-    const user = await UserService.create(testUser)
-    await UserService.deleteOne({ id: user._id })
-    const userDeleted = await UserService.findById({ id: user._id })
+    const user = await userService.create(testUser)
+    await userService.deleteOne({ id: user.id })
+    const userDeleted = await userService.findById({ id: user.id })
 
     expect(userDeleted).toBe(null);
   })
   it('.deleteMany - should delete many users', async () => {
-    const user = await UserService.create(testUser)
-    const user2 = await UserService.create(testUser2)
+    const user = await userService.create(testUser)
+    const user2 = await userService.create(testUser2)
 
-    await UserService.deleteMany({})
-    
-    const userDeleted = await UserService.findById({ id: user._id })
-    const userDeleted2 = await UserService.findById({ id: user2._id })
+    await userService.deleteMany({})
+
+    const userDeleted = await userService.findById({ id: user.id })
+    const userDeleted2 = await userService.findById({ id: user2.id })
 
     expect(userDeleted).toBe(null);
     expect(userDeleted2).toBe(null);

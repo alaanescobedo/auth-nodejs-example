@@ -1,16 +1,20 @@
-import { IToken, TokenModel } from "./token.model";
+import type { ITokenData } from "./interfaces";
+import { TokenModel } from "./token.model";
 
-const testToken: Omit<IToken, 'lastUsedAt'> = {
+const testToken: ITokenData = {
   token: "testToken",
   agent: "Chrome",
-  user: "62880e24e99fb107e5b22b8e" as any // Valid ObjectId of mongoose.
+  user: "62880e24e99fb107e5b22b8e" as any, // Valid ObjectId of mongoose.
+  createdAt: null,
+  lastUsedAt: null
 }
 
 describe("TokenModel", () => {
+  const validToken = new TokenModel(testToken)
+
 
   describe('# - Validations', () => {
     const invalidToken = new TokenModel({})
-    const validToken = new TokenModel(testToken)
 
     it("should contain an error if validations don't pass", async () => {
       const error = invalidToken.validateSync()
@@ -27,6 +31,22 @@ describe("TokenModel", () => {
     it("should pass the validations", async () => {
       const error = validToken.validateSync()
       expect(error).toBeUndefined()
+    })
+  })
+
+  describe('# - Methods', () => {
+    it('.toJSON - should transform and remove mongoose _id and __v ', async () => {
+      // @ts-ignore
+      expect(validToken.toJSON()._id).not.toBeDefined()
+      // @ts-ignore
+      expect(validToken.toJSON().__v).not.toBeDefined()
+
+    })
+    it('.toObject - should transform and remove mongoose _id and __v', async () => {
+      // @ts-ignore
+      expect(validToken.toObject()._id).not.toBeDefined()
+      // @ts-ignore
+      expect(validToken.toObject().__v).not.toBeDefined()
     })
   })
 
