@@ -1,25 +1,40 @@
 import type { Request, Response } from "express"
-import { UserRepository } from "@user/repository"
+import { UserService } from "@user"
 import { EmailService } from "@notifier/email/services"
-import { EncryptService, TokenService } from "@auth/services"
-import { AppError } from "@error"
+import { cryptService, TokenService } from "@auth/services"
+import { AppError, catchError } from "@error"
+import { UserAgentGuard } from "@auth/guards"
 
-const resetPassword = async (req: Request, res: Response) => {
-  const { "user-agent": userAgent } = req.headers
-  if (!userAgent) throw new AppError('User agent is required for this operation', 400)
+const resetPassword = ({
+  userService = UserService(),
+  tokenService = TokenService()
+}) => catchError(async (req: Request, res: Response) => {
+  const userAgent = UserAgentGuard(req)
 
   const { password } = req.body as { password: string }
   const data = req.locals.accessToken?.data
 
-  const userUpdated = await UserRepository.findOneAndUpdate({ id: data, password: EncryptService.hash(password) })
-  if (userUpdated === null) throw new AppError('User not found', 404)
+  const passwordHashed = cryptService.hash(password)
+  const userUpdated = await userService.findOneAndUpdate({ id: data?.userID }, { password: passwordHashed })
+  if (!userUpdated) throw new AppError('User not found', 404)
 
-  const { newAccessToken, response } = await TokenService.refresh(res, {
-    user: userUpdated._id,
-    at: { data: userUpdated._id },
-    agent: userAgent,
-    cookie: 'rt'
+  // TODO: Repeated in a lot of tests - Refactor in a helper
+  const accessTokenData = {
+    username: userUpdated.username,
+    roles: null
+  }
+  const newAccessToken = cryptService.sign({ data: accessTokenData })
+  const newRefreshToken = cryptService.sign({ data: userUpdated.id, refresh: true })
+  await tokenService.create({ token: newRefreshToken, user: userUpdated.id, agent: userAgent })
+  res.cookie('rt', newRefreshToken, {
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    sameSite: 'strict',
+    secure: true
   })
+  // TODO: END TODO
+
+
 
   await EmailService.send({
     template: 'resetPassword',
@@ -27,9 +42,10 @@ const resetPassword = async (req: Request, res: Response) => {
     token: newAccessToken
   })
 
-  response.status(200).json({
+  res.status(200)
+  res.json({
     message: 'Reset password route',
   })
-}
+})
 
 export { resetPassword }

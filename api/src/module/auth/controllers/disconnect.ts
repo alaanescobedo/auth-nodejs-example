@@ -1,18 +1,26 @@
 import type { Request, Response } from "express"
+import { CookieGuard } from "@auth/guards"
 import { TokenService } from "@auth/services"
-import { TokenRepository } from "@auth/repository"
 import { AppError, catchError } from "@error"
 
-const disconnect = catchError(async (req: Request, res: Response) => {
-  const { rt: refreshToken } = req.cookies
-  if (!refreshToken) throw new AppError('No Content - Refresh token not found', 400)
+type DisconnectTokenMethods = 'revoke' | 'exists'
+interface DisconnectParams {
+  tokenService?: Pick<ReturnType<typeof TokenService>, DisconnectTokenMethods>
+}
 
-  const tokenData = await TokenRepository.findOne({ token: refreshToken })
-  if (tokenData === null) throw new AppError('No Content', 404)
+const disconnect = ({
+  tokenService = TokenService()
+}: DisconnectParams) => catchError(async (req: Request, res: Response) => {
 
-  const response = await TokenService.revoke(res, { cookie: 'rt', token: refreshToken })
+  const refreshToken = CookieGuard(req.cookies.rt)
 
-  return response.status(200).json({})
+  const exists = await tokenService.exists({ token: refreshToken })
+  if (exists === false) throw new AppError('No Content - token not found', 404)
+
+  await tokenService.revoke({ name: 'rt', value: refreshToken })
+
+  res.status(200)
+  res.json()
 })
 
 export { disconnect }
