@@ -1,7 +1,6 @@
 import type { NextFunction, Request, Response } from "express"
+import { cryptService } from "@auth/services"
 import { AppError, catchError } from "@error"
-import { TokenService } from "@auth/services"
-
 
 export const authProtect = catchError(async (req: Request, _res: Response, next: NextFunction) => {
   const { authorization = '' } = req.headers
@@ -10,8 +9,7 @@ export const authProtect = catchError(async (req: Request, _res: Response, next:
   if (authorization?.toLocaleLowerCase().startsWith('bearer ')) {
     token = authorization.substring(7)
   }
-
-  const { data, exp } = TokenService.verify({ token }) as { data: string, exp: number }
+  const { data, exp } = cryptService.verify({ token }) as { data: string, exp: number }
 
   if (data === undefined || exp === undefined) throw new AppError('Token is not valid', 400)
   if (exp * 1000 < Date.now()) throw new AppError('Token is expired', 400)
@@ -23,7 +21,9 @@ export const authProtect = catchError(async (req: Request, _res: Response, next:
   // // @ts-ignore FIX
   req.locals = {
     accessToken: {
-      data
+      data: {
+        userID: data
+      }
     }
   }
   next()

@@ -1,13 +1,10 @@
-import mongoose, { type Document, Model, Schema } from 'mongoose'
-import type { IUser } from '@common/auth/interfaces';
-import { EncryptService } from '@auth/services';
-
-export interface UserEntity extends IUser, Document {
-  id: string
-}
+import mongoose, { Schema } from 'mongoose'
+import { AuthService } from '@auth';
+import type { IUserData } from './interfaces/user';
+import { transformMongoId } from '@utils';
 
 // Timestamps automatically add createdAt and updatedAt fields
-export const userSchema = new Schema<IUser>({
+const userSchema = new Schema<IUserData>({
   email: {
     type: String,
     required: [true, 'email is required'],
@@ -46,21 +43,21 @@ export const userSchema = new Schema<IUser>({
 }, {
   timestamps: true,
   toJSON: {
-    versionKey: false
+    versionKey: false,
+    transform: transformMongoId
   },
   toObject: {
-    versionKey: false
+    versionKey: false,
+    transform: transformMongoId
   }
 })
 
 userSchema.pre('save', function (next) {
   if (!this.isModified('password')) next()
 
-  this.password = EncryptService.hash(this.password);
+  this.password = AuthService.cryptService.hash(this.password);
   next();
 });
 
-const UserModel: Model<IUser> = mongoose.models['User'] || mongoose.model('User', userSchema);
-export type IUserModel = mongoose.Model<IUser, {}, {}, {}>
-
+const UserModel = mongoose.models['User'] || mongoose.model('User', userSchema);
 export { UserModel };

@@ -10,7 +10,8 @@ const hash = (item: string, rounds: number = 12): string => {
   return bcrypt.hashSync(item, salt)
 }
 const compare = async (plainPassword: string, hashedPassword: string): Promise<boolean> => {
-  return await bcrypt.compare(plainPassword, hashedPassword)
+  const res = await bcrypt.compare(plainPassword, hashedPassword)
+  return res
 }
 // Sign
 const sign = ({ data, refresh = false, options }: SignJWT): string => {
@@ -21,13 +22,9 @@ const sign = ({ data, refresh = false, options }: SignJWT): string => {
   })
 }
 const verify = ({ token, refresh = false, options }: VerifyJWT): any => {
-  try {
-    const secret = getJWTSecret(refresh)
-    const res = jwt.verify(token, secret, options)
-    return res
-  } catch (error) {
-    throw error
-  }
+  const secret = getJWTSecret(refresh)
+  const res = jwt.verify(token, secret, options)
+  return res
 }
 
 // Helpers
@@ -38,7 +35,7 @@ function getJWTSecret(isRefreshToken: boolean): string {
 }
 
 
-export const CryptService: ICryptService = {
+export const cryptService: ICryptService = {
   hash,
   compare,
   verify,

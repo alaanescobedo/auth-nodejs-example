@@ -8,7 +8,6 @@ const refreshToken = ({
   userService = UserService(),
   tokenService = TokenService(),
 }) => catchError(async (req: Request, res: Response) => {
-
   const refreshToken = CookieGuard(req.cookies.rt)
 
   res.clearCookie('rt', {

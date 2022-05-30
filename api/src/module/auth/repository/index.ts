@@ -1,1 +1,3 @@
-export { TokenModel as TokenRepository, TokenEntity } from './token.model'
+export { TokenModel } from './token.model'
+export type { ITokenData } from './interfaces'
+

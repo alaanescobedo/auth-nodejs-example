@@ -11,7 +11,6 @@ interface DisconnectParams {
 const disconnect = ({
   tokenService = TokenService()
 }: DisconnectParams) => catchError(async (req: Request, res: Response) => {
-
   const refreshToken = CookieGuard(req.cookies.rt)
 
   const exists = await tokenService.exists({ token: refreshToken })

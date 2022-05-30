@@ -13,15 +13,17 @@
     "start": "node server.js",
     "dev:api": "yarn workspace api dev",
     "dev:client": "yarn workspace client dev",
-    "docker:api-up": "yarn workspace api compose:up"
+    "docker:api-up": "yarn workspace api compose:up",
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "yup": "0.32.11"
   },
   "devDependencies": {
-    "@types/jest": "^27.5.1",
-    "jest": "^28.1.0",
-    "ts-jest": "^28.0.2",
-    "typescript": "^4.6.4"
+    "@types/jest": "27.5.1",
+    "jest": "28.1.0",
+    "ts-jest": "28.0.2",
+    "ts-node": "10.7.0",
+    "typescript": "4.6.4"
   }
 }

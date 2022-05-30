@@ -3,7 +3,9 @@ declare namespace Express {
     locals: {
       user?: import('../../common/src/modules/auth/interfaces/auth.interfaces').IUser
       accessToken?: {
-        data: any 
+        data:{
+          userID: string
+        }
       }
     }
   }

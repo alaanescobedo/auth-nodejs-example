@@ -21,11 +21,10 @@ const connect = ({
   tokenService = TokenService(),
   userService = UserService()
 }: ConnectParams) => catchError(async (req: Request, res: Response) => {
+  const userAgent = UserAgentGuard(req)
 
   const { email, password } = req.body as LoginUserClientData
   const { rt: refreshToken } = req.cookies
-
-  const userAgent = UserAgentGuard(req)
 
   const user = await userService.findOne({ email })
   if (!user) throw new AppError('User not found', 404)

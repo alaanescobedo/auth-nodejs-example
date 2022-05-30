@@ -3,7 +3,32 @@ import logo from './logo.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const login = async () => {
+    const res =await fetch('http://localhost:3333/api/v1/auth/login', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: 'user@user.com',
+        password: 'Narnia_1105!'
+      })
+    })
+
+    console.log(await res.json());
+  }
+
+  const logout = async () => {
+    const res = await fetch('http://localhost:3333/api/v1/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    console.log(await res.json());
+  }
 
   return (
     <div className="App">
@@ -11,8 +36,11 @@ function App() {
         <img src={logo} className="App-logo" alt="logo" />
         <p>Hello Vite + React!</p>
         <p>
-          <button type="button" onClick={() => setCount((count) => count + 1)}>
-            count is: {count}
+          <button type="button" onClick={login}>
+            Login
+          </button>
+          <button type="button" onClick={logout}>
+            Logout
           </button>
         </p>
         <p>

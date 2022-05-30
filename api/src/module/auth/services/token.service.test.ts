@@ -20,7 +20,7 @@ const testToken2 = {
 }
 
 
-describe("UserService", () => {
+describe("TokenService", () => {
   const tokenService = TokenService()
 
   beforeEach(async () => {
@@ -40,20 +40,6 @@ describe("UserService", () => {
     expect(token.lastUsedAt).toBeInstanceOf(Date)
   });
 
-  it('.getByOne - should get a token by id', async () => {
-    const { token } = await tokenService.create(testToken)
-    const tokenFound = await tokenService.getOne({ token })
-
-    expect(tokenFound).not.toBe(null);
-  })
-  it('.getByOne - should throw a error if user not found', async () => {
-    try {
-      const { token } = await tokenService.create(testToken)
-      await tokenService.getOne({ token })
-    } catch (error) {
-      expect(error).toBeDefined();
-    }
-  })
   it('.findOne - should find a token using different query options', async () => {
     const { token: value, id } = await tokenService.create(testToken)
 
@@ -71,17 +57,17 @@ describe("UserService", () => {
   })
   it('.exists - should return true if token exists', async () => {
     const { token } = await tokenService.create(testToken)
-    const tokenExists = await tokenService.exits({ token })
+    const tokenExists = await tokenService.exists({ token })
     expect(tokenExists).toBe(true);
   })
   it('.exists - should return false if token not exists', async () => {
-    const tokenExists = await tokenService.exits({ token: 'fake-token' })
+    const tokenExists = await tokenService.exists({ token: 'fake-token' })
     expect(tokenExists).toBe(false);
   })
   it('.deleteOne - should delete a token', async () => {
     const { token } = await tokenService.create(testToken)
     await tokenService.revoke({ token })
-    const tokenFound = await tokenService.exits({ token })
+    const tokenFound = await tokenService.exists({ token })
     expect(tokenFound).toBe(false);
   })
   it('.deleteMany - should delete all tokens', async () => {

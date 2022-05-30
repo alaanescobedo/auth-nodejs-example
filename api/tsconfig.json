@@ -18,7 +18,9 @@
     "baseUrl": "./src",
     "paths": {
       "@auth/*": ["module/auth/*"],
+      "@auth": ["module/auth/auth.module.ts"],
       "@user/*":["module/user/*"],
+      "@user":["module/user/user.module.ts"],
       "@error": ["module/error"],
       "@notifier/*": ["module/notifier/*"],
       "@setup/*": ["setup/*"],

@@ -5,9 +5,10 @@ import type { IAppError } from './errorApp'
 const errorHandler = (err: IAppError, req: Request, res: Response, _next?: NextFunction): Response<Send> => {
   err.statusCode = err.statusCode ?? 500
   err.status = err.status ?? 'error'
-
+  console.log({ NODE_ENV })
   if (NODE_ENV !== 'production' && req.originalUrl.startsWith('/api')) {
-    return res.status(err.statusCode).send({
+    res.status(err.statusCode)
+    return res.send({
       status: err.status,
       message: err.message,
       error: err,
@@ -15,7 +16,8 @@ const errorHandler = (err: IAppError, req: Request, res: Response, _next?: NextF
     })
   }
 
-  return res.status(500).send({ message: 'Something went wrong' })
+  res.status(500)
+  return res.send({ message: 'Something went wrong' })
 }
 
 export default errorHandler

@@ -1,4 +1,3 @@
-import { AppError } from '@error'
 import type { Model, HydratedDocument, FilterQuery, UpdateQuery } from 'mongoose'
 
 type MongooseModel<T> = Model<T>
@@ -7,13 +6,11 @@ type DeleteOneRes = { acknowledged: boolean, deletedCount: number }
 
 export interface CRUDFactoryMethods<T> {
   create: (data: Partial<T>) => Promise<HydratedDocument<T>>
-  getById: ({ id }: { id: string }) => Promise<HydratedDocument<T>>
-  getOne: (query: FilterQuery<T>) => Promise<HydratedDocument<T>>
   findById: ({ id }: { id: string }) => Promise<HydratedDocument<T> | null>
   findOne: (query: FilterQuery<T>) => Promise<HydratedDocument<T> | null>
   findMany: (query: FilterQuery<T>) => Promise<HydratedDocument<T>[]>
-  exits: (query: FilterQuery<T>) => Promise<boolean | null>
-  updateOne: (query: FilterQuery<T>, update: UpdateQuery<T>) => Promise<HydratedDocument<T>>
+  exists: (query: FilterQuery<T>) => Promise<boolean | null>
+  findOneAndUpdate: (query: FilterQuery<T>, update: UpdateQuery<T>) => Promise<HydratedDocument<T> | null>
   deleteOne: (query: FilterQuery<T>) => Promise<DeleteOneRes>
   deleteMany: (query: FilterQuery<T>) => Promise<void>
 }
@@ -24,16 +21,6 @@ const CRUDFactory = <T>(model: MongooseModel<T>): CRUDFactoryMethods<T> => {
     return await model.create(data)
   }
   // Read
-  const getById = async ({ id }: { id: string }): Promise<HydratedDocument<T>> => {
-    const res = await model.findById(id)
-    if (res === null) throw new AppError('Not found', 404)
-    return res
-  }
-  const getOne = async ({ ...query }: FilterQuery<T>): Promise<HydratedDocument<T>> => {
-    const res = await model.findOne(query)
-    if (res === null) throw new AppError('Not found', 404)
-    return res
-  }
   const findById = async ({ id }: { id: string }): Promise<HydratedDocument<T> | null> => {
     const res = await model.findById(id)
     return res
@@ -46,14 +33,13 @@ const CRUDFactory = <T>(model: MongooseModel<T>): CRUDFactoryMethods<T> => {
     const res = await model.find(query)
     return res
   }
-  const exits = async ({ ...query }: FilterQuery<T>): Promise<boolean | null> => {
+  const exists = async ({ ...query }: FilterQuery<T>): Promise<boolean> => {
     const res = await model.exists(query)
     return res !== null ? true : false
   }
   // Update
-  const updateOne = async ({ ...query }: FilterQuery<T>, { ...update }: UpdateQuery<T>): Promise<HydratedDocument<T>> => {
+  const findOneAndUpdate = async ({ ...query }: FilterQuery<T>, { ...update }: UpdateQuery<T>): Promise<HydratedDocument<T> | null> => {
     const user = await model.findOneAndUpdate(query, update, { new: true, })
-    if (user === null) throw new AppError('Not found', 404)
     return user
   }
   // Delete
@@ -67,13 +53,11 @@ const CRUDFactory = <T>(model: MongooseModel<T>): CRUDFactoryMethods<T> => {
 
   return {
     create,
-    getById,
-    getOne,
     findById,
     findOne,
     findMany,
-    exits,
-    updateOne,
+    exists,
+    findOneAndUpdate,
     deleteOne,
     deleteMany,
   }

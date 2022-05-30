@@ -15,6 +15,7 @@ interface SignupServerData extends SignupClientData {
 interface IUser extends SignupServerData, SignupUserData {
   active: boolean
   verified: boolean
+  id: any
 }
 
 export {

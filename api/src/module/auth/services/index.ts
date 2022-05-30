@@ -1,3 +1,9 @@
-export { TokenService } from './token.service'
-export { EncryptService } from '../services/encrypt.service'
-export { CookieService } from '../services/cookie.service'
+import { cryptService } from "./crypt.service"
+import { TokenService } from "./token.service"
+
+const AuthService = {
+  cryptService,
+  TokenService
+}
+export { cryptService, TokenService }
+export default AuthService

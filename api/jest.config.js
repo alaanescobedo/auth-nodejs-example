@@ -9,5 +9,8 @@ module.exports = {
   setupFiles: ['dotenv/config'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   modulePaths: ['<rootDir>/src'],
-  moduleNameMapper: pathsToModuleNameMapper(paths, { prefix: `<rootDir>/${baseUrl}`, })
+  moduleNameMapper: pathsToModuleNameMapper(paths, { prefix: `<rootDir>/${baseUrl}` }),
+  collectCoverage: true,
+  verbose: true,
+  detectOpenHandles: true
 };

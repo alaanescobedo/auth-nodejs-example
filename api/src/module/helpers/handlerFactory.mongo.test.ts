@@ -43,31 +43,6 @@ describe("Factory Mongo", () => {
     })
   })
 
-  describe('.getOne', () => {
-    it('should get a token by id', async () => {
-      const { name } = await factory.create(testItem)
-      const itemFound = await factory.getOne({ name })
-
-      expect(itemFound).not.toBe(null);
-      expect(itemFound.name).toBe(name);
-    })
-    it('should throw a error if user not found', async () => {
-      try {
-        await factory.getOne({ name: 'fake-name' })
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
-    })
-    it('should call method findOne of model', async () => {
-      const { name } = await factory.create(testItem)
-      const spyFindOne = jest.spyOn(TestModel, 'findOne')
-      await factory.getOne({ name })
-
-      expect(spyFindOne).toHaveBeenCalledTimes(1)
-      expect(spyFindOne).toHaveBeenCalledWith({ name })
-    })
-  })
-
   describe('.findOne', () => {
     it('should find a token using different query options', async () => {
       const { name, email } = await factory.create(testItem)
@@ -93,39 +68,40 @@ describe("Factory Mongo", () => {
   })
 
   describe('.find', () => {
-
     it('should return true if token exists', async () => {
       const { name } = await factory.create(testItem)
-      const itemFound = await factory.exits({ name })
+      const itemFound = await factory.exists({ name })
 
       expect(itemFound).toBe(true);
     })
     it('should return false if token not exists', async () => {
-      const itemFound = await factory.exits({ name: 'fake-name' })
+      const itemFound = await factory.exists({ name: 'fake-name' })
       expect(itemFound).toBe(false);
     })
     it('should call method exists of model', async () => {
       const { name } = await factory.create(testItem)
       const spyExists = jest.spyOn(TestModel, 'exists')
-      await factory.exits({ name })
+      await factory.exists({ name })
 
       expect(spyExists).toHaveBeenCalledTimes(1)
       expect(spyExists).toHaveBeenCalledWith({ name })
     })
   })
 
-  describe('updateOne', () => {
+  describe('findOneAndUpdate', () => {
 
     it('should update a the name of the item', async () => {
       const { id } = await factory.create(testItem)
       const newName = 'new-name'
-      const itemUpdated = await factory.updateOne({ id }, { name: newName })
+      const itemUpdated = await factory.findOneAndUpdate({ id }, { name: newName })
+
+      if (itemUpdated === null) throw new Error("Invalid test, user not found")
 
       expect(itemUpdated.name).toBe(newName);
     })
     it('should throw an error if id not found', async () => {
       try {
-        await factory.updateOne({ id: 'fake-id' }, { name: 'fake-name' })
+        await factory.findOneAndUpdate({ id: 'fake-id' }, { name: 'fake-name' })
       }
       catch (error) {
         expect(error).toBeDefined();
@@ -136,7 +112,7 @@ describe("Factory Mongo", () => {
       const spyFindOneAndUpdate = jest.spyOn(TestModel, 'findOneAndUpdate')
       const newName = 'new-name'
 
-      await factory.updateOne({ id }, { name: newName })
+      await factory.findOneAndUpdate({ id }, { name: newName })
       expect(spyFindOneAndUpdate).toHaveBeenCalledTimes(1)
       expect(spyFindOneAndUpdate).toHaveBeenCalledWith({ id }, { name: newName }, { new: true })
     })
@@ -150,7 +126,7 @@ describe("Factory Mongo", () => {
 
       expect(deletedCount).toBe(1);
 
-      const tokenFound = await factory.exits({ id })
+      const tokenFound = await factory.exists({ id })
       expect(tokenFound).toBe(false);
     })
     it('should return false and 0 if no item was deleted', async () => {

@@ -1,1 +1,4 @@
-export { default as UserService } from './user.service'
+import { UserService } from './user.service'
+
+export { UserService }
+export default UserService

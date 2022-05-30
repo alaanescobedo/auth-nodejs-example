@@ -13,7 +13,6 @@ const TokenService = (repository: typeof TokenModel = TokenModel): ITokenService
     revokeAll: async (query) => await deleteMany(query)
   }
 }
-
 export { TokenService }
 export default TokenService
 

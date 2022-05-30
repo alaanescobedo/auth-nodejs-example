@@ -8,7 +8,7 @@ interface IEmailService {
 
 class EmailService implements IEmailService {
   private emailProvider: IEmailService
-  constructor(emailProvider: IEmailService) {
+  constructor(emailProvider: IEmailService = NodeMailerService) {
     this.emailProvider = emailProvider
   }
 
@@ -16,5 +16,6 @@ class EmailService implements IEmailService {
     return await this.emailProvider.send({ user, template, token })
   }
 }
-
-export default new EmailService(NodeMailerService)
+const emailService = new EmailService(NodeMailerService)
+export { emailService }
+export default new EmailService()

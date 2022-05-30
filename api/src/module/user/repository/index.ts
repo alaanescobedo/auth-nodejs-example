@@ -1,1 +1,1 @@
-export { UserModel as UserRepository, UserEntity, IUserModel } from './user.model'
+export { UserModel } from './user.model'

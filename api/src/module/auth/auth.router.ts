@@ -4,10 +4,11 @@ import {
   resetPasswordSchema,
   signupSchema
 } from '@common/auth/validations'
+import { connectionDB } from '@setup/config/middlewares/connection-db'
 import { validateRequest } from '@utils'
 import { authProtect } from '@auth/middlewares'
 import AuthController from '@auth/controllers'
-import { connectionDB } from '@setup/config/middlewares/connection-db'
+// import { UserAgentGuard } from '@auth/guards'
 
 const router = express.Router()
 
@@ -20,7 +21,10 @@ router
 
 router
   .route('/login')
-  .post(validateRequest(loginSchema), AuthController.connect)
+  .post(
+    validateRequest(loginSchema),
+    AuthController.connect
+  )
 
 router
   .route('/logout')

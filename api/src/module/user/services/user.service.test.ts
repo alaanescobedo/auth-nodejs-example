@@ -1,5 +1,6 @@
 import { UserService } from "@user";
 import { UserModel } from "@user/repository";
+import type { IUserDoc } from "@user/repository/interfaces/user";
 
 const testUser = {
   username: "testUser",
@@ -23,7 +24,8 @@ describe("UserService", () => {
   })
 
   it(".create - should create a user", async () => {
-    const user = await userService.create(testUser)
+    const user: IUserDoc = await userService.create(testUser)
+
     expect(user.id).toBeDefined();
     expect(user.username).toBe(testUser.username.toLowerCase());
     expect(user.email).toBe(testUser.email);
@@ -36,45 +38,6 @@ describe("UserService", () => {
     expect(user.updatedAt).toBeDefined();
     expect(user.updatedAt).toBeInstanceOf(Date);
   });
-
-  it('.getById - should get a user by id', async () => {
-    const user = await userService.create(testUser)
-    const userFound = await userService.getById({ id: user.id })
-
-    expect(userFound).not.toBe(null);
-  })
-  it('.getById - should throw a error if user not found', async () => {
-    try {
-      await userService.getById({ id: fakeId })
-    } catch (error) {
-      expect(error).toBeDefined();
-    }
-  })
-  it('.getOne - should get a user using different query options', async () => {
-    const user = await userService.create(testUser)
-    const userFound = await userService.getOne({ username: user.username })
-
-    expect(userFound).not.toBe(null);
-    expect(userFound.id).toEqual(user.id);
-    expect(userFound.username).toEqual(user.username);
-
-    const userFound2 = await userService.getOne({ email: user.email, })
-    expect(userFound2).not.toBe(null);
-    expect(userFound2.id).toEqual(user.id);
-    expect(userFound2.username).toEqual(user.username);
-
-    const userFound3 = await userService.getOne({ id: user.id })
-    expect(userFound3).not.toBe(null);
-    expect(userFound3.id).toEqual(user.id);
-    expect(userFound3.username).toEqual(user.username);
-  })
-  it('.getOne - should throw a error if user not found', async () => {
-    try {
-      await userService.getOne({ id: fakeId })
-    } catch (error) {
-      expect(error).toBeDefined();
-    }
-  })
 
   it('.findById - should find a user by id', async () => {
     const user = await userService.create(testUser)
@@ -112,6 +75,20 @@ describe("UserService", () => {
   })
   it('.findOne - should return null if no user found', async () => {
     const userFound = await userService.findOne({ id: fakeId })
+    expect(userFound).toBe(null);
+  })
+
+  it('.findOneAndUpdate - should update a user', async () => {
+    const user = await userService.create(testUser)
+    const userFound = await userService.findOneAndUpdate({ id: user.id }, { username: 'newUserName' })
+    if (userFound === null) throw new Error("Invalid test, user not found")
+
+    expect(userFound).not.toBe(null);
+    expect(userFound.id).toEqual(user.id);
+    expect(userFound.username).toEqual('newUserName'.toLowerCase());
+  })
+  it('.findOneAndUpdate - should return null if no user found', async () => {
+    const userFound = await userService.findOneAndUpdate({ id: fakeId }, { username: 'newUserName' })
     expect(userFound).toBe(null);
   })
 

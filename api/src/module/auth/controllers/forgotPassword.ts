@@ -9,7 +9,6 @@ const forgotPassword = ({
   userService = UserService(),
   tokenService = TokenService()
 }) => catchError(async (req: Request, res: Response) => {
-
   const userAgent = UserAgentGuard(req)
 
   const { email } = req.body as { email: string }
